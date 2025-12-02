@@ -1,8 +1,18 @@
+import org.apache.commons.dbcp2.BasicDataSource;
+
 import java.sql.*;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+
+
+    public static void main(String[] args) throws SQLException {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setUrl("jdbc:mysql://localhost:3306/northwind");
+        dataSource.setUsername("root");
+        dataSource.setPassword("yearup");
+        Connection connection = dataSource.getConnection();
+
         System.out.println("What do you want to do?\n" +
                 "1) Display all products\n" +
                 "2) Display all customers\n" +
@@ -13,22 +23,23 @@ public class Main {
         String choice = scanner.nextLine();
         switch (choice){
             case "1":
-                queryProducts();
+                queryProducts(dataSource);
                 break;
             case "2":
-                queryCustomers();
+                queryCustomers(dataSource);
                 break;
             default:
                 System.out.println("Nah");
         }
     }
 
-    public static void queryProducts() {
-        try(Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/northwind", "root", "yearup");) {
-            Statement statement = connection.createStatement();
-            String query = "SELECT ProductID, ProductName, UnitPrice, UnitsInStock FROM products ";
+    public static void queryProducts(BasicDataSource dataSource) {
+        String query = "SELECT ProductID, ProductName, UnitPrice, UnitsInStock FROM products ";
+        try(Connection connection = dataSource.getConnection()) {
 
-            ResultSet results = statement.executeQuery(query);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+
+            ResultSet results = preparedStatement.executeQuery(query);
 
             while (results.next()) {
                 String productId = results.getString("ProductID");
@@ -48,12 +59,13 @@ public class Main {
         }
     }
 
-    public static void queryCustomers() {
-        try(Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/northwind", "root", "yearup");) {
-            Statement statement = connection.createStatement();
-            String query = "SELECT ContactName, CompanyName, City, Country, Phone FROM Customers ";
+    public static void queryCustomers(BasicDataSource dataSource) {
+        String query = "SELECT ContactName, CompanyName, City, Country, Phone FROM Customers ";
+        try(Connection connection = dataSource.getConnection()) {
 
-            ResultSet results = statement.executeQuery(query);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+
+            ResultSet results = preparedStatement.executeQuery(query);
 
             while (results.next()) {
                 String contactName = results.getString("ContactName");
